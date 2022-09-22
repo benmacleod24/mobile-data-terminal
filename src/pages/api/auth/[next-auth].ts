@@ -1,8 +1,11 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import NextAuth from 'next-auth';
 
+// OAuth Providers.
 import Discord from 'next-auth/providers/discord';
 import Credentials from 'next-auth/providers/credentials';
+import Password from '@/backend/services/password';
+import Account from '@/backend/services/account';
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
 	/* Any pre-auth logic we want to run. */
@@ -13,12 +16,42 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
 					username: { type: 'test' },
 					password: { type: 'password' },
 				},
-				authorize(credentials, req) {
+				authorize: async (credentials, req) => {
 					//@ts-ignore
 					// username and password will always be there.
 					const { username, password } = credentials;
 
-					return {};
+					/* Collect user logic. */
+					const { getAccountByUsername } = new Account();
+					const account = await getAccountByUsername(username);
+
+					// Return if the account is not found.
+					if (!account) {
+						return null;
+					}
+
+					/**
+					 * Password service & verification.
+					 * @todo Make sure the password valid var works.
+					 */
+					const { isPasswordValid } = new Password({
+						plaintext: password,
+						hashed: account.password,
+					});
+
+					/**
+					 * Return null if the password is incorrect.
+					 * @todo Add logging for failed password attempts.
+					 */
+					if (!isPasswordValid) {
+						return null;
+					}
+
+					// Return the account after everything passed correctly.
+					return {
+						...account,
+						password: null,
+					};
 				},
 			}),
 		],
