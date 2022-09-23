@@ -12,9 +12,18 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
 	return await NextAuth(req, res, {
 		providers: [
 			Credentials({
+				name: 'Login Page',
 				credentials: {
-					username: { type: 'test' },
-					password: { type: 'password' },
+					username: {
+						label: 'username',
+						type: 'text',
+						placeholder: 'username',
+					},
+					password: {
+						label: 'password',
+						type: 'password',
+						placeholder: 'password',
+					},
 				},
 				authorize: async (credentials, req) => {
 					//@ts-ignore
@@ -23,7 +32,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
 
 					/* Collect user logic. */
 					const { getAccountByUsername } = new Account();
-					const account = await getAccountByUsername(username);
+					let account = await getAccountByUsername(username);
 
 					// Return if the account is not found.
 					if (!account) {
@@ -47,11 +56,12 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
 						return null;
 					}
 
+					//@ts-ignore.
+					// Ignore this because we already check for this.
+					delete account.password;
+
 					// Return the account after everything passed correctly.
-					return {
-						...account,
-						password: null,
-					};
+					return account;
 				},
 			}),
 		],
@@ -62,23 +72,44 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
 			maxAge: 30 * 24 * 60 * 60, // 30 days,
 		},
 
+		secret: 'SECRET_LOL',
+
 		// Pages
-		pages: {
-			signIn: '/auth/signin',
-			signOut: '/auth/signout',
-			error: '/auth/error', // Error code passed in query string as ?error=
-			verifyRequest: '/auth/verify-request', // (used for check email message)
-			newUser: '/auth/new-user', // New users will be directed here on first sign in (leave the property out if not of interest)
-		},
+		// pages: {
+		// 	signIn: '/auth/signin',
+		// 	signOut: '/auth/signout',
+		// 	error: '/auth/error', // Error code passed in query string as ?error=
+		// 	verifyRequest: '/auth/verify-request', // (used for check email message)
+		// 	newUser: '/auth/new-user', // New users will be directed here on first sign in (leave the property out if not of interest)
+		// },
 
 		/**
 		 * Callbacks for actions.
 		 */
 		callbacks: {
-			session: async ({ session }) => {
+			session: async ({ session, token, user }) => {
+				const username = token.username;
+				const userId = token.id;
+
+				if (!userId || !username) {
+					/* Run Discord Collection Logic. */
+				}
+
 				return session;
 			},
-			jwt: async ({ token }) => {
+			/**
+			 * @todo Find which varible provides discord stuff.
+			 * @param user Provides the username and password when accepted.
+			 */
+			jwt: async ({ token, account, user, profile }) => {
+				/**
+				 * If user is present set the token values.
+				 * @note User is only from username and password sign in.
+				 */
+				if (user) {
+					token.id = user.id;
+					token.username = user.username;
+				}
 				return token;
 			},
 		},

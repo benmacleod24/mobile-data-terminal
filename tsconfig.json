@@ -19,6 +19,11 @@
 			"@prisma": ["./prisma"]
 		}
 	},
-	"include": ["next-env.d.ts", "**/*.ts", "**/*.tsx"],
+	"include": [
+		"next-env.d.ts",
+		"**/*.ts",
+		"**/*.tsx",
+		"src/pages/api/index.tss"
+	],
 	"exclude": ["node_modules"]
 }
