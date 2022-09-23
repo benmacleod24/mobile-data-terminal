@@ -3,6 +3,7 @@ import type { NextPage } from 'next';
 import { Flex } from '@chakra-ui/react';
 import Header from '../components/Header';
 import { useRouter } from 'next/router';
+import Layout from '@/components/layout';
 
 const Home: NextPage = () => {
 	const { query } = useRouter();
@@ -11,12 +12,7 @@ const Home: NextPage = () => {
 	const ref = query.ref ?? undefined;
 	const success = query.success ?? false;
 
-	return (
-		<Flex flexDir={'column'} h='100vh' w='100vw' align={'center'}>
-			<Header />
-			<Flex w='container.lg' pt='5'></Flex>
-		</Flex>
-	);
+	return <Layout></Layout>;
 };
 
 export default Home;

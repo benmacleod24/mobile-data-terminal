@@ -128,9 +128,8 @@ const Options: React.FunctionComponent = ({}) => {
 
 				// Return a normal options if no chilren.
 				return (
-					<Link href={option.href || '/'}>
+					<Link href={option.href || '/'} key={index}>
 						<Button
-							key={index}
 							variant={isActiveUrl ? 'outline' : 'ghost'}
 							size='sm'
 						>

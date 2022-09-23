@@ -3,6 +3,9 @@ import { Flex, Image, Text } from '@chakra-ui/react';
 
 interface MediaProps {}
 
+/**
+ * Logo and heading for the header.
+ */
 const Media: React.FunctionComponent<MediaProps> = ({}) => {
 	return (
 		<Flex h='full' align={'center'}>
