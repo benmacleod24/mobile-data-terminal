@@ -183,15 +183,8 @@ const Login: React.FunctionComponent<LoginProps> = ({}) => {
 								<Flex flexDir={'column'} gap={3}>
 									<Button
 										type='submit'
-										bg='#0284C7'
+										variant={'brand.blue'}
 										isLoading={props.isSubmitting}
-										_hover={{
-											bg: '#0EA5E9',
-										}}
-										_focus={{
-											bg: '#0369A1',
-										}}
-										border={'1px solid #38BDF8'}
 									>
 										Login
 									</Button>

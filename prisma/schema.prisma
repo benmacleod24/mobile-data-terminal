@@ -14,11 +14,109 @@ datasource db {
 // Store discord id in this instead of different column because we only have one oauth provider.
 model Account {
   id Int @unique @default(autoincrement())
-  username String @db.VarChar(50) // Usernames should be no longer than 50 chars.
-  password String @db.LongText
+
+  // User Data
+  username   String @db.VarChar(50) // Usernames should be no longer than 50 chars.
+  password   String @db.LongText
   discord_id String @db.MediumText
-  created_at DateTime @default(now())
+
+  // Meta Data
+  created_at DateTime  @default(now())
+  deleted_at DateTime?
+
+  // Relations
+  permissions Account_Permissions[]
 
   @@index([username])
 }
 
+model Permissions {
+  id  Int    @unique @default(autoincrement())
+  key String @db.LongText
+
+  // Relations
+  accountsWith Account_Permissions[]
+}
+
+model Account_Permissions {
+  id Int @unique @default(autoincrement())
+
+  // Data
+  account_id    Int
+  permission_id Int
+
+  // Relations
+  permission Permissions @relation(fields: [permission_id], references: [id])
+  account    Account     @relation(fields: [account_id], references: [id])
+}
+
+model Citizens {
+  id Int @unique @default(autoincrement())
+
+  // Citizen Data
+  first_name    String
+  last_name     String
+  date_of_birth DateTime @default(now())
+  mugshot       String   @db.LongText
+
+  // Meta Data
+  created_at DateTime  @default(now())
+  deleted_at DateTime?
+}
+
+model PenalCode_Category {
+  id   Int    @unique @default(autoincrement())
+  name String
+
+  // Meta Data
+  created_at DateTime  @default(now())
+  deleted_at DateTime?
+
+  // Relations
+  charges PenalCode_Charge[]
+}
+
+model PenalCode_Charge {
+  id          Int @unique @default(autoincrement())
+  category_id Int
+
+  // Charge name and desctipions.
+  name        String
+  description String @db.LongText
+
+  // Charge Penalites.
+  time Int @default(0)
+  fine Int @default(0)
+
+  // Meta Data
+  created_at DateTime  @default(now())
+  deleted_at DateTime?
+
+  // Relations
+  category PenalCode_Category @relation(fields: [category_id], references: [id])
+  points   PenalCode_Points[]
+}
+
+// Table for holding licsense points for charges, so this can automaticlly be done.
+model PenalCode_Points {
+  id        Int @unique @default(autoincrement())
+  charge_id Int
+
+  // Points Data.
+  type   PointTypes
+  amount Int
+
+  // Meta Data
+  created_at DateTime  @default(now())
+  deleted_at DateTime?
+
+  // Relations
+  charge PenalCode_Charge @relation(fields: [charge_id], references: [id])
+}
+
+// Different types of licenses for points.
+enum PointTypes {
+  DRIVING
+  PILOTS
+  HUNTING
+}

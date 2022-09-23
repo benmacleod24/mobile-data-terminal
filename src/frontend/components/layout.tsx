@@ -11,7 +11,7 @@ const Layout: React.FunctionComponent<
 	return (
 		<Flex flexDir={'column'} h='100vh' w='100vw' align={'center'}>
 			<Header />
-			<Flex w='container.lg' pt='5' flexGrow={2}>
+			<Flex w='container.lg' flexGrow={2}>
 				{children}
 			</Flex>
 			<Footer />

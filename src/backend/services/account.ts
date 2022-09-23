@@ -2,14 +2,36 @@ import { prisma } from '@prisma';
 import { Account as TAccount } from '@prisma/client';
 
 class Account {
-	constructor() {}
+	private readonly accountId?: number;
+
+	constructor(accountId?: number) {
+		this.accountId = accountId;
+	}
+
+	/**
+	 * Collect account by it's id.
+	 * @param accountId Account id if not passed by constructor
+	 * @returns Account or undefined.
+	 */
+	public getAccount = async (
+		accountId?: number
+	): Promise<TAccount | undefined> => {
+		const _id = this.accountId || accountId;
+		if (!_id) return undefined;
+		const account = await prisma.account.findUnique({
+			where: {
+				id: _id,
+			},
+		});
+		return account ?? undefined;
+	};
 
 	/**
 	 * Colllect an acccount by their username.
 	 * @param username Username of the account.
 	 * @returns Account model or undefined.
 	 */
-	public getAccountByUsername = async (
+	public static getAccountByUsername = async (
 		username: string
 	): Promise<TAccount | undefined> => {
 		const account = await prisma.account.findFirst({
@@ -26,7 +48,7 @@ class Account {
 	 * @param discord_id Discord id of the account.
 	 * @returns Account model or undefined.
 	 */
-	public getAccountByDiscordId = async (
+	public static getAccountByDiscordId = async (
 		discord_id?: string
 	): Promise<TAccount | undefined> => {
 		if (!discord_id) return undefined;
@@ -39,4 +61,4 @@ class Account {
 	};
 }
 
-export default Account;
+export { Account };

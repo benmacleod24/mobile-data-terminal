@@ -1,6 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { prisma } from '@prisma';
-import Password from '@/backend/services/password';
+import { Password } from '@/backend/services/password';
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
 	const { hashPassword } = new Password({});

@@ -1,9 +1,9 @@
 import * as React from 'react';
 import type { NextPage } from 'next';
 import { Flex } from '@chakra-ui/react';
-import Header from '../components/Header';
+import Header from '../frontend/components/Header';
 import { useRouter } from 'next/router';
-import Layout from '@/components/layout';
+import Layout from '@/frontend/components/layout';
 
 const Home: NextPage = () => {
 	const { query } = useRouter();

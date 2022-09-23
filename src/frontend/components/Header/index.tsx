@@ -29,15 +29,8 @@ const Header: React.FunctionComponent<HeaderProps> = ({}) => {
 						<Link href={'/auth/login'}>
 							<Button
 								type='submit'
-								bg='#0284C7'
+								variant={'brand.blue'}
 								size='sm'
-								_hover={{
-									bg: '#0EA5E9',
-								}}
-								_focus={{
-									bg: '#0369A1',
-								}}
-								border={'1px solid #38BDF8'}
 							>
 								Login
 							</Button>
@@ -46,18 +39,11 @@ const Header: React.FunctionComponent<HeaderProps> = ({}) => {
 					{isLoggedIn && (
 						<Button
 							type='submit'
-							bg='#EAB308'
+							variant={'brand.yellow'}
 							size='sm'
 							onClick={() =>
 								signOut({ callbackUrl: '/auth/login' })
 							}
-							_hover={{
-								bg: '#FACC15',
-							}}
-							_focus={{
-								bg: '#CA8A04',
-							}}
-							border={'1px solid #FDE047'}
 						>
 							Logout
 						</Button>

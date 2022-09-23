@@ -64,4 +64,4 @@ class Password {
 	};
 }
 
-export default Password;
+export { Password };
