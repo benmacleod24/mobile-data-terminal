@@ -11,6 +11,10 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
 	/* Any pre-auth logic we want to run. */
 	return await NextAuth(req, res, {
 		providers: [
+			Discord({
+				clientSecret: process.env.DISCORD_CLIENT_SECRET as string,
+				clientId: process.env.DISCORD_CLIENT_ID as string,
+			}),
 			Credentials({
 				name: 'Login Page',
 				credentials: {
@@ -36,7 +40,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
 
 					// Return if the account is not found.
 					if (!account) {
-						return null;
+						throw new Error("Account Doesn't Exist");
 					}
 
 					/**
@@ -53,7 +57,9 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
 					 * @todo Add logging for failed password attempts.
 					 */
 					if (!isPasswordValid) {
-						return null;
+						throw new Error(
+							'Invalid credentials, please try again.'
+						);
 					}
 
 					//@ts-ignore.
@@ -75,21 +81,56 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
 		secret: 'SECRET_LOL',
 
 		// Pages
-		// pages: {
-		// 	signIn: '/auth/signin',
-		// 	signOut: '/auth/signout',
-		// 	error: '/auth/error', // Error code passed in query string as ?error=
-		// 	verifyRequest: '/auth/verify-request', // (used for check email message)
-		// 	newUser: '/auth/new-user', // New users will be directed here on first sign in (leave the property out if not of interest)
-		// },
+		pages: {
+			signIn: '/auth/login',
+			// signOut: '/auth/signout',
+			error: '/auth/login', // Error code passed in query string as ?error=
+			// verifyRequest: '/auth/verify-request', // (used for check email message)
+			// newUser: '/auth/new-user', // New users will be directed here on first sign in (leave the property out if not of interest)
+		},
 
 		/**
 		 * Callbacks for actions.
 		 */
 		callbacks: {
+			/**
+			 * @todo Login attempt logs.
+			 */
+			signIn: async ({ profile, credentials, account }) => {
+				// Verify the provider is discord, logic check for creds is above.
+				if (account && account.provider === 'discord') {
+					// Make sure the discord profile exist.
+					if (!profile) {
+						throw new Error('An error occured while processing.');
+					}
+
+					// Grab the discord id from the profile object.
+					const discord_id = account.providerAccountId ?? undefined;
+
+					// Find an account with the associated discord id.
+					const { getAccountByDiscordId } = new Account();
+					const foundAccount = await getAccountByDiscordId(
+						discord_id
+					);
+
+					// If there is not a linked account return an error.
+					if (foundAccount === undefined) {
+						return `/auth/login?${new URLSearchParams({
+							error: 'Could not find account associated with this discord, please login with your credentials.',
+						})}`;
+					}
+
+					// Return true is all checks pass.
+					return true;
+				}
+
+				return true;
+			},
 			session: async ({ session, token, user }) => {
 				const username = token.username;
 				const userId = token.id;
+
+				console.log(user);
 
 				if (!userId || !username) {
 					/* Run Discord Collection Logic. */
@@ -109,6 +150,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
 				 * If user is present set the token values.
 				 * @note User is only from username and password sign in.
 				 */
+
 				if (user) {
 					token.id = user.id;
 					token.username = user.username;
