@@ -1,92 +1,79 @@
-import { nextAuthConfig } from '@/pages/api/auth/[...nextauth]';
+import { nextAuthConfig as _config } from '@/pages/api/auth/[...nextauth]';
+import { NextApiRequest, NextApiResponse } from 'next';
+import { Session, unstable_getServerSession } from 'next-auth';
 import { prisma } from '@prisma';
 import { Prisma } from '@prisma/client';
-import { NextApiRequest, NextApiResponse } from 'next';
-import { unstable_getServerSession } from 'next-auth';
 
-interface Constructor {
-	accountId?: number;
-}
-
-// Type for collection of accounts permissions.
-export type AccountPermissions = Prisma.Account_PermissionsGetPayload<{
+type AccountPermisssions = Prisma.Account_PermissionsGetPayload<{
 	include: {
 		permission: true;
 	};
-}>;
+}>[];
 
-/**
- * Permissions service for collecting an accounts permissions.
- */
-class Permissions {
-	private accountId?: any;
-	private readonly req: NextApiRequest;
-	private readonly res: NextApiResponse;
+class PermissionService {
+	private readonly request: NextApiRequest;
+	private readonly response: NextApiResponse;
 
 	constructor(req: NextApiRequest, res: NextApiResponse) {
-		this.req = req;
-		this.res = res;
-
-		// Initalze the permission service.
-		this.accountId = this.getAccountIdFromReq();
+		this.request = req;
+		this.response = res;
 	}
 
 	/**
-	 * Collect the account id from the session, this is required for the service.
-	 * @returns undefined
+	 * Get session from the server and return int.
+	 * @returns Session or null
 	 */
-	private getAccountIdFromReq = async () => {
-		const session = await unstable_getServerSession(
-			this.req,
-			this.res,
-			nextAuthConfig
-		);
-
-		// this.accountId = session?.user.accountId;
-		return session?.user.accountId ?? 0;
+	private getSession = async (): Promise<Session | null> => {
+		const { request, response } = this;
+		const session = unstable_getServerSession(request, response, _config);
+		return session;
 	};
 
 	/**
-	 * Collect all permissions for the account.
-	 * @returns
-	 */
-	public getAccountPermissions = async (): Promise<
-		AccountPermissions[] | undefined
-	> => {
-		if (!this.accountId) return undefined;
-
-		const permissions = await prisma.account_Permissions.findMany({
-			where: {
-				account_id: this.accountId,
-			},
-			include: {
-				permission: true,
-			},
-		});
-
-		return permissions;
-	};
-
-	/**
-	 * Check a specific permission for a account.
+	 * Check an accounts permission against the database.
 	 * @param key Key of the permission you want to check.
-	 * @returns True or false
+	 * @returns True is the user has permission and false if they don't
 	 */
-	public getAccountPermission = async (key: string) => {
-		// Collect permission from the database.
-		const _permission = await prisma.account_Permissions.findFirst({
+	public getAccountPermission = async (key: string): Promise<boolean> => {
+		const session = await this.getSession();
+		if (!session) return false;
+
+		// Collect permission record from the database.
+		const permission = await prisma.account_Permissions.findFirst({
 			where: {
-				account_id: this.accountId,
+				account_id: session.user.accountId,
 				permission: {
 					key,
 				},
 			},
 		});
 
-		console.log(_permission);
+		return permission && permission.id ? true : false;
+	};
 
-		return _permission && _permission.id ? true : false;
+	/**
+	 * Get all permissions for the account in the session.
+	 * @returns Array of account permissions
+	 */
+	public getAccountPermissions = async (): Promise<
+		AccountPermisssions | undefined
+	> => {
+		const session = await this.getSession();
+		if (!session) return undefined;
+
+		// Collect the permission records from the database.
+		const permissions = await prisma.account_Permissions.findMany({
+			where: {
+				account_id: session.user.accountId,
+			},
+			include: {
+				permission: true,
+			},
+		});
+
+		return permissions ?? [];
 	};
 }
 
-export { Permissions };
+export { PermissionService };
+export default PermissionService;

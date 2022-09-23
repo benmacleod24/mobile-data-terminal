@@ -1,8 +1,8 @@
 import { stringToNumber } from '@/utils/parse';
 import { NextApiHandler, NextApiRequest, NextApiResponse } from 'next';
-import { Permissions } from '@/backend/services';
 import { z } from 'zod';
 import { json } from 'stream/consumers';
+import { PermissionService } from '@/backend/services';
 
 const handler = (req: NextApiRequest, res: NextApiResponse) => {
 	const { method } = req;
@@ -20,9 +20,9 @@ const getQueryParams = z.object({
 });
 
 const GET = async (req: NextApiRequest, res: NextApiResponse) => {
-	const { getAccountPermission } = new Permissions(req, res);
-	const hasPermission = await getAccountPermission('EDIT_CHARGE');
-	return res.json(hasPermission);
+	const { getAccountPermission } = new PermissionService(req, res);
+	const hasAccess = await getAccountPermission('EDIT_CHARGE');
+	return res.status(200).json(hasAccess);
 };
 
 export default handler;
