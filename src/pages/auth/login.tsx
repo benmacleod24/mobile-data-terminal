@@ -7,13 +7,25 @@ import {
 	Image,
 	InputRightAddon,
 	InputRightElement,
+	Divider,
+	Alert,
+	AlertDescription,
+	AlertIcon,
 } from '@chakra-ui/react';
 import * as React from 'react';
-import { Formik, Form } from 'formik';
+import { Formik, Form, FormikHelpers } from 'formik';
 import { signIn, signOut, useSession } from 'next-auth/react';
 import { HiEyeOff, HiEye } from 'react-icons/hi';
+import { BsDiscord } from 'react-icons/bs';
 import Link from 'next/link';
+import { useRouter } from 'next/router';
 
+const initalLoginValue = {
+	username: '',
+	password: '',
+};
+
+type TFormValues = typeof initalLoginValue;
 interface LoginProps {}
 
 /**
@@ -25,11 +37,47 @@ const Login: React.FunctionComponent<LoginProps> = ({}) => {
 	const [passwordVisible, setPasswordVisible] =
 		React.useState<boolean>(false);
 	const { status } = useSession();
+	const { push, query } = useRouter();
+
+	/**
+	 * Handle submission of the login form.
+	 * @param values Values of the form.
+	 * @param helpers Formik helpers.
+	 */
+	const onSubmit = async (
+		loginType: 'credentials' | 'discord' = 'credentials',
+		values: TFormValues,
+		helpers: FormikHelpers<TFormValues>
+	) => {
+		const { password, username } = values;
+
+		/**
+		 * Disable redirect so we can handle error right in the form.
+		 */
+		const response = await signIn(loginType, {
+			redirect: false,
+			callbackUrl: '/',
+			username: username ?? '',
+			password: password ?? '',
+		});
+
+		// If there is an error we want to add it to the error object.
+		if (response && response.error) {
+			helpers.setErrors({
+				username: response.error,
+			});
+		}
+
+		// Login successfully? Redirect to homepage.
+		if (response && response.ok && !response.error) {
+			return push('/');
+		}
+	};
 
 	return (
 		<Flex>
 			<Flex
-				w='xs'
+				w='sm'
 				bg='brand.700'
 				rounded={'md'}
 				border='1px solid #30363d'
@@ -51,18 +99,12 @@ const Login: React.FunctionComponent<LoginProps> = ({}) => {
 					</Text>
 					<Text opacity={0.9}>Login Portal</Text>
 				</Flex>
+
 				<Formik
-					initialValues={{
-						username: '',
-						password: '',
-					}}
-					onSubmit={(values) => {
-						signIn('credentials', {
-							username: values.username,
-							password: values.password,
-							callbackUrl: '/',
-						});
-					}}
+					initialValues={initalLoginValue}
+					onSubmit={(values, helpers) =>
+						onSubmit('credentials', values, helpers)
+					}
 				>
 					{(props) => {
 						return (
@@ -73,6 +115,25 @@ const Login: React.FunctionComponent<LoginProps> = ({}) => {
 								name='mdt-login'
 								mt='5'
 							>
+								{(props.errors && props.errors.username) ||
+									(query.error && (
+										<Alert
+											status='error'
+											rounded={'md'}
+											py='2'
+											border={'1px solid'}
+											borderColor='red.300'
+										>
+											<AlertIcon fontSize={'sm'} />
+											<AlertDescription
+												fontSize={'sm'}
+												lineHeight='4'
+											>
+												{props.errors.username ||
+													query.error}
+											</AlertDescription>
+										</Alert>
+									))}
 								<InputGroup variant={'outline'}>
 									<Input
 										placeholder='Username'
@@ -119,20 +180,46 @@ const Login: React.FunctionComponent<LoginProps> = ({}) => {
 										}
 									/>
 								</InputGroup>
-								<Button
-									type='submit'
-									bg='#0284C7'
-									isLoading={props.isSubmitting}
-									_hover={{
-										bg: '#0EA5E9',
-									}}
-									_focus={{
-										bg: '#0369A1',
-									}}
-									border={'1px solid #38BDF8'}
-								>
-									Login
-								</Button>
+								<Flex flexDir={'column'} gap={3}>
+									<Button
+										type='submit'
+										bg='#0284C7'
+										isLoading={props.isSubmitting}
+										_hover={{
+											bg: '#0EA5E9',
+										}}
+										_focus={{
+											bg: '#0369A1',
+										}}
+										border={'1px solid #38BDF8'}
+									>
+										Login
+									</Button>
+									<Flex align={'center'}>
+										<Divider />
+										<Text mx='4' color='whiteAlpha.400'>
+											Or
+										</Text>
+										<Divider />
+									</Flex>
+									<Button
+										bg='#7289da'
+										isLoading={props.isSubmitting}
+										_hover={{
+											bg: '#8699df',
+										}}
+										_focus={{
+											bg: '#5e77d4',
+										}}
+										leftIcon={<BsDiscord />}
+										border={'1px solid #9aaae4'}
+										onClick={() =>
+											onSubmit('discord', {}, {})
+										}
+									>
+										Login with Discord
+									</Button>
+								</Flex>
 								<Flex mx='auto' color='whiteAlpha.400' gap={2}>
 									<Link href={'/'}>
 										<Button
