@@ -12,9 +12,15 @@ import * as React from 'react';
 import { Formik, Form } from 'formik';
 import { signIn, signOut, useSession } from 'next-auth/react';
 import { HiEyeOff, HiEye } from 'react-icons/hi';
+import Link from 'next/link';
 
 interface LoginProps {}
 
+/**
+ * @desc Login page to handle logging in.
+ * @todo Breakout custom input component.
+ * @todo Make a formik wrapper maybe?
+ */
 const Login: React.FunctionComponent<LoginProps> = ({}) => {
 	const [passwordVisible, setPasswordVisible] =
 		React.useState<boolean>(false);
@@ -54,6 +60,7 @@ const Login: React.FunctionComponent<LoginProps> = ({}) => {
 						signIn('credentials', {
 							username: values.username,
 							password: values.password,
+							callbackUrl: '/',
 						});
 					}}
 				>
@@ -126,14 +133,30 @@ const Login: React.FunctionComponent<LoginProps> = ({}) => {
 								>
 									Login
 								</Button>
-								<Button
-									onClick={() => signOut()}
-									variant='link'
-									fontWeight={'normal'}
-									color='whiteAlpha.400'
-								>
-									Logout
-								</Button>
+								<Flex mx='auto' color='whiteAlpha.400' gap={2}>
+									<Link href={'/'}>
+										<Button
+											variant='link'
+											size={'xs'}
+											fontWeight={'normal'}
+											color='whiteAlpha.400'
+										>
+											Home
+										</Button>
+									</Link>
+									&#x2022;
+									<Link href={'/help'}>
+										<Button
+											onClick={() => signOut()}
+											variant='link'
+											size={'xs'}
+											fontWeight={'normal'}
+											color='whiteAlpha.400'
+										>
+											Help
+										</Button>
+									</Link>
+								</Flex>
 							</Flex>
 						);
 					}}

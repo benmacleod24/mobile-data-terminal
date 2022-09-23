@@ -95,6 +95,9 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
 					/* Run Discord Collection Logic. */
 				}
 
+				/* Setting Session Varibles. */
+				session.user.username = username;
+
 				return session;
 			},
 			/**
