@@ -1,3 +1,5 @@
+import { PermissionKeys } from '@/config';
+import { usePermissions } from '@/frontend/state/permission.state';
 import { Button, Flex, Image, Text } from '@chakra-ui/react';
 import { signOut, useSession } from 'next-auth/react';
 import Link from 'next/link';
@@ -9,8 +11,10 @@ interface HeaderProps {}
 
 const Header: React.FunctionComponent<HeaderProps> = ({}) => {
 	const { status } = useSession();
+	const { state } = usePermissions();
 	// Determine login status from sesh status.
 	const isLoggedIn = status === 'authenticated';
+	const isCommand = state[PermissionKeys.CommandPanel];
 
 	return (
 		<Flex as={'header'} minH='16' maxH='16' bg='brand.700' w='full'>
@@ -35,6 +39,16 @@ const Header: React.FunctionComponent<HeaderProps> = ({}) => {
 								Login
 							</Button>
 						</Link>
+					)}
+					{isCommand && (
+						<Button
+							type='submit'
+							mr='2'
+							variant={'brand.blue'}
+							size='sm'
+						>
+							Command Panel
+						</Button>
 					)}
 					{isLoggedIn && (
 						<Button

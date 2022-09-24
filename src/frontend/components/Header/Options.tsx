@@ -101,7 +101,7 @@ const Options: React.FunctionComponent = ({}) => {
 										</MenuButton>
 										<MenuList bg='brand.700'>
 											{/* @ts-ignore */}
-											{option.children.map((o) => {
+											{option.children.map((o, i) => {
 												if (
 													status !==
 														'authenticated' &&
@@ -111,7 +111,10 @@ const Options: React.FunctionComponent = ({}) => {
 												}
 
 												return (
-													<Link href={o.href || '/'}>
+													<Link
+														href={o.href || '/'}
+														key={i}
+													>
 														<MenuItem>
 															{o.title}
 														</MenuItem>

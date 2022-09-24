@@ -4,11 +4,11 @@ import { Session, unstable_getServerSession } from 'next-auth';
 import { prisma } from '@prisma';
 import { Prisma } from '@prisma/client';
 
-type AccountPermisssions = Prisma.Account_PermissionsGetPayload<{
+export type AccountPermisssions = Prisma.Account_PermissionsGetPayload<{
 	include: {
 		permission: true;
 	};
-}>[];
+}>;
 
 class PermissionService {
 	private readonly request: NextApiRequest;
@@ -56,7 +56,7 @@ class PermissionService {
 	 * @returns Array of account permissions
 	 */
 	public getAccountPermissions = async (): Promise<
-		AccountPermisssions | undefined
+		AccountPermisssions[] | undefined
 	> => {
 		const session = await this.getSession();
 		if (!session) return undefined;
