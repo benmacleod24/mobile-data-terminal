@@ -82,9 +82,10 @@ const Login: React.FunctionComponent<LoginProps> = ({}) => {
 				rounded={'md'}
 				border='1px solid #30363d'
 				mx='auto'
-				mt='40'
+				mt={['40', '40', '40', '20']}
 				flexDir='column'
 				p='7'
+				transition={'0.25s ease-in-out'}
 			>
 				<Flex flexDir={'column'} mx='auto' textAlign={'center'} py='1'>
 					<Image
@@ -115,25 +116,25 @@ const Login: React.FunctionComponent<LoginProps> = ({}) => {
 								name='mdt-login'
 								mt='5'
 							>
-								{(props.errors && props.errors.username) ||
-									(query.error && (
-										<Alert
-											status='error'
-											rounded={'md'}
-											py='2'
-											border={'1px solid'}
-											borderColor='red.300'
+								{((props.errors && props.errors.username) ||
+									query.error) && (
+									<Alert
+										status='error'
+										rounded={'md'}
+										py='2'
+										border={'1px solid'}
+										borderColor='red.300'
+									>
+										<AlertIcon fontSize={'sm'} />
+										<AlertDescription
+											fontSize={'sm'}
+											lineHeight='4'
 										>
-											<AlertIcon fontSize={'sm'} />
-											<AlertDescription
-												fontSize={'sm'}
-												lineHeight='4'
-											>
-												{props.errors.username ||
-													query.error}
-											</AlertDescription>
-										</Alert>
-									))}
+											{props.errors.username ||
+												query.error}
+										</AlertDescription>
+									</Alert>
+								)}
 								<InputGroup variant={'outline'}>
 									<Input
 										placeholder='Username'
@@ -207,6 +208,7 @@ const Login: React.FunctionComponent<LoginProps> = ({}) => {
 										leftIcon={<BsDiscord />}
 										border={'1px solid #9aaae4'}
 										onClick={() =>
+											//@ts-ignore
 											onSubmit('discord', {}, {})
 										}
 									>

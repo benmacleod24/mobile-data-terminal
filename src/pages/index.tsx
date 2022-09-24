@@ -1,12 +1,8 @@
 import * as React from 'react';
 import type { NextPage } from 'next';
 import { Flex, Text } from '@chakra-ui/react';
-import Header from '../frontend/components/Header';
-import { useRouter } from 'next/router';
 import Layout from '@/frontend/components/layout';
 import { useSession } from 'next-auth/react';
-import { useQuery } from '@tanstack/react-query';
-import { getAccountPermissions } from '@/frontend/api/permissions';
 import { usePermissions } from '@/frontend/state/permission.state';
 
 const Home: NextPage = () => {
