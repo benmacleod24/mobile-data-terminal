@@ -57,7 +57,7 @@ model Citizens {
   first_name    String
   last_name     String
   date_of_birth DateTime @default(now())
-  mugshot       String   @db.LongText
+  mugshot       String   @db.LongText @default("https://ostlundservice.com/wp-content/uploads/2020/05/profile.png")
 
   // Meta Data
   created_at DateTime  @default(now())
